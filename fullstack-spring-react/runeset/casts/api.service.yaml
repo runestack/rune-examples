@@ -1,0 +1,30 @@
+service:
+  name: api
+  namespace: demo
+  image: "{{ values:api.image }}:{{ values:api.tag }}"
+  scale: {{ values:api.replicas | default: 2 }}
+  ports:
+    - name: http
+      port: 8080
+  dependencies:
+    - service: postgres
+    - secret:db-credentials
+  env:
+    SPRING_DATASOURCE_URL: "jdbc:postgresql://postgres.demo.rune:5432/{{ values:postgres.db }}"
+    SPRING_DATASOURCE_USERNAME: {{ secret: db-credentials/username }}
+    SPRING_DATASOURCE_PASSWORD: {{ secret: db-credentials/password }}
+  health:
+    liveness:
+      type: http
+      path: /actuator/health/liveness
+      port: 8080
+      initialDelaySeconds: 20
+      intervalSeconds: 10
+      timeoutSeconds: 3
+      failureThreshold: 3
+    readiness:
+      type: http
+      path: /actuator/health/readiness
+      port: 8080
+      initialDelaySeconds: 10
+      intervalSeconds: 5

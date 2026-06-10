@@ -1,0 +1,20 @@
+# Replace <name>, <port>, and the probe path, then: rune cast deploy/app.yaml
+---
+service:
+  name: <name>
+  namespace: demo
+  image: <name>:dev
+  scale: 1
+  ports:
+    - name: http
+      port: <port>
+  health:
+    liveness:
+      type: http
+      path: /healthz
+      port: <port>
+      initialDelaySeconds: 3
+      intervalSeconds: 10
+  expose:
+    port: http
+    host: <name>.local

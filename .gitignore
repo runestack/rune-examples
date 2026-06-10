@@ -1,0 +1,10 @@
+# Build artifacts — examples are built locally with docker build
+node_modules/
+dist/
+target/
+*.jar
+
+# Editor/OS noise
+.DS_Store
+.idea/
+.vscode/

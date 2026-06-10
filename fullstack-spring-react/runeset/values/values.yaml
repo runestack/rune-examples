@@ -1,0 +1,15 @@
+api:
+  image: notes-api
+  tag: dev
+  replicas: 2
+
+web:
+  image: notes-web
+  tag: dev
+  expose:
+    host: notes.local
+
+postgres:
+  image: postgres:16-alpine
+  db: notes
+  volumeSize: 5Gi

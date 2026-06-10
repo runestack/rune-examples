@@ -1,0 +1,4 @@
+name: fullstack-spring-react
+version: 0.1.0
+description: Spring Boot API + React SPA + Postgres, packaged as one runeset
+namespace: demo

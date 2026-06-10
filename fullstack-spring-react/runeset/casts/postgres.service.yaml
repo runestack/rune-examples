@@ -1,0 +1,29 @@
+service:
+  name: postgres
+  namespace: demo
+  image: {{ values:postgres.image }}
+  scale: 1
+  ports:
+    - name: pg
+      port: 5432
+  dependencies:
+    - secret:db-credentials
+  env:
+    POSTGRES_DB: {{ values:postgres.db }}
+    POSTGRES_USER: {{ secret: db-credentials/username }}
+    POSTGRES_PASSWORD: {{ secret: db-credentials/password }}
+    # A fresh volume mount contains lost+found; initdb requires an empty
+    # directory, so point PGDATA at a subdirectory.
+    PGDATA: /var/lib/postgresql/data/pgdata
+  volumes:
+    - name: pgdata
+      mountPath: /var/lib/postgresql/data
+      claimTemplate:
+        size: {{ values:postgres.volumeSize }}
+        accessMode: ReadWriteOnce
+  health:
+    liveness:
+      type: tcp
+      port: 5432
+      initialDelaySeconds: 5
+      intervalSeconds: 10

@@ -1,0 +1,96 @@
+# Whole stack as one plain castfile — no templating, no values.
+# Apply with:  rune cast deploy/app.yaml
+# For the templated/packaged version of the same stack, see ../runeset.
+---
+secret:
+  name: db-credentials
+  namespace: demo
+  type: static
+  data:
+    username: notes
+    password: change-me-please
+---
+service:
+  name: postgres
+  namespace: demo
+  image: postgres:16-alpine
+  scale: 1
+  ports:
+    - name: pg
+      port: 5432
+  dependencies:
+    - secret:db-credentials
+  env:
+    POSTGRES_DB: notes
+    POSTGRES_USER: "{{ secret: db-credentials/username }}"
+    POSTGRES_PASSWORD: "{{ secret: db-credentials/password }}"
+    # A fresh volume mount contains lost+found; initdb requires an empty
+    # directory, so point PGDATA at a subdirectory.
+    PGDATA: /var/lib/postgresql/data/pgdata
+  volumes:
+    - name: pgdata
+      mountPath: /var/lib/postgresql/data
+      claimTemplate:
+        size: 5Gi
+        accessMode: ReadWriteOnce
+  health:
+    liveness:
+      type: tcp
+      port: 5432
+      initialDelaySeconds: 5
+      intervalSeconds: 10
+---
+service:
+  name: api
+  namespace: demo
+  image: notes-api:dev
+  scale: 2
+  ports:
+    - name: http
+      port: 8080
+  dependencies:
+    - service: postgres
+    - secret:db-credentials
+  env:
+    SPRING_DATASOURCE_URL: jdbc:postgresql://postgres.demo.rune:5432/notes
+    SPRING_DATASOURCE_USERNAME: "{{ secret: db-credentials/username }}"
+    SPRING_DATASOURCE_PASSWORD: "{{ secret: db-credentials/password }}"
+  health:
+    liveness:
+      type: http
+      path: /actuator/health/liveness
+      port: 8080
+      initialDelaySeconds: 20
+      intervalSeconds: 10
+      timeoutSeconds: 3
+      failureThreshold: 3
+    readiness:
+      type: http
+      path: /actuator/health/readiness
+      port: 8080
+      initialDelaySeconds: 10
+      intervalSeconds: 5
+---
+service:
+  name: web
+  namespace: demo
+  image: notes-web:dev
+  scale: 1
+  ports:
+    - name: http
+      port: 80
+  dependencies:
+    - service: api
+  health:
+    liveness:
+      type: http
+      path: /healthz
+      port: 80
+      initialDelaySeconds: 3
+      intervalSeconds: 10
+  expose:
+    port: http
+    host: notes.local
+    # On an edge node with a real domain, enable automatic TLS:
+    # tls:
+    #   auto: true

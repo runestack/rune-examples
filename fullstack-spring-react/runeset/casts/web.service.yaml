@@ -1,0 +1,23 @@
+service:
+  name: web
+  namespace: demo
+  image: "{{ values:web.image }}:{{ values:web.tag }}"
+  scale: 1
+  ports:
+    - name: http
+      port: 80
+  dependencies:
+    - service: api
+  health:
+    liveness:
+      type: http
+      path: /healthz
+      port: 80
+      initialDelaySeconds: 3
+      intervalSeconds: 10
+  expose:
+    port: http
+    host: "{{ values:web.expose.host }}"
+    # On an edge node with a real domain, enable automatic TLS:
+    # tls:
+    #   auto: true

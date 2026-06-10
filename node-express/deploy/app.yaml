@@ -1,0 +1,32 @@
+# A stateless Express service with config injected from a configmap.
+# Apply with:  rune cast deploy/app.yaml
+---
+configmap:
+  name: node-hello-settings
+  namespace: demo
+  data:
+    GREETING: hello from node on rune
+---
+service:
+  name: node-hello
+  namespace: demo
+  image: node-hello:dev
+  scale: 2
+  ports:
+    - name: http
+      port: 3000
+  dependencies:
+    - configmap:node-hello-settings
+  # Every key in the configmap becomes an environment variable.
+  envFrom:
+    - configmap: node-hello-settings
+  health:
+    liveness:
+      type: http
+      path: /healthz
+      port: 3000
+      initialDelaySeconds: 2
+      intervalSeconds: 10
+  expose:
+    port: http
+    host: node-hello.local

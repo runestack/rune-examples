@@ -1,0 +1,20 @@
+# A stateless Go HTTP service. Apply with:  rune cast deploy/app.yaml
+---
+service:
+  name: go-hello
+  namespace: demo
+  image: go-hello:dev
+  scale: 2
+  ports:
+    - name: http
+      port: 8080
+  health:
+    liveness:
+      type: http
+      path: /healthz
+      port: 8080
+      initialDelaySeconds: 2
+      intervalSeconds: 10
+  expose:
+    port: http
+    host: go-hello.local
