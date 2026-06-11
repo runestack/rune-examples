@@ -1,0 +1,4 @@
+name: loki
+version: 0.1.0
+description: Single-binary Grafana Loki — a Core-tier RuneSight log backend, run on Rune itself
+namespace: observability

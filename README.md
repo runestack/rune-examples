@@ -39,6 +39,15 @@ Organized by application shape, not by language — the Rune spec for a stateles
 | --- | --- | --- |
 | _planned: worker-redis-queue_ | any · Redis | Queue consumer, scale-to-N |
 
+### Observability backends
+
+Reference runesets for running a [RuneSight](https://docs.runestack.io/observability/overview) log backend *on* Rune itself — cast the runeset, point `observability:` in your runefile at the in-cluster DNS name, logs flow.
+
+| Example | Backend | Tier | Shows |
+| --- | --- | --- | --- |
+| [clickhouse](clickhouse/) | ClickHouse 24.8 | Advanced (SQL, percentiles) | Stateful service, secret-fed env, config XML via configmap mount, S3 tiering via storage policy |
+| [loki](loki/) | Grafana Loki 3.x | Core | Single-binary Loki, config templated from values, init-step volume chown, straight-to-S3 option |
+
 Want one that isn't here? [Open an issue](../../issues) — or better, [contribute it](CONTRIBUTING.md). `TEMPLATE/` gets you most of the way.
 
 ## Anatomy of an example

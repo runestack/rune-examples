@@ -1,0 +1,36 @@
+service:
+  name: clickhouse
+  namespace: observability
+  image: {{ values:clickhouse.image }}
+  scale: 1
+  ports:
+    - name: native
+      port: 9000
+    - name: http
+      port: 8123
+  dependencies:
+    - secret:clickhouse-credentials
+    - configmap:clickhouse-config
+  env:
+    CLICKHOUSE_DB: {{ values:clickhouse.database }}
+    CLICKHOUSE_USER: {{ secret: clickhouse-credentials/username }}
+    CLICKHOUSE_PASSWORD: {{ secret: clickhouse-credentials/password }}
+  resources:
+    memory:
+      limit: {{ values:clickhouse.memoryLimit }}
+  volumes:
+    - name: data
+      mountPath: /var/lib/clickhouse
+      claimTemplate:
+        size: {{ values:clickhouse.volumeSize }}
+        accessMode: ReadWriteOnce
+  configmapMounts:
+    - name: extra-config
+      mountPath: /etc/clickhouse-server/config.d
+      configmapName: clickhouse-config
+  health:
+    liveness:
+      type: tcp
+      port: 9000
+      initialDelaySeconds: 10
+      intervalSeconds: 10

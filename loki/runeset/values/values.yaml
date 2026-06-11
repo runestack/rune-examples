@@ -1,0 +1,15 @@
+loki:
+  image: grafana/loki:3.1.1
+  volumeSize: 10Gi
+  memoryLimit: 1Gi
+
+  # How long Loki keeps log data (compactor-enforced). Loki duration
+  # syntax: 168h = 7 days, 720h = 30 days.
+  retention: 168h
+
+  # Object storage for chunks, as a single-line YAML flow mapping injected
+  # into Loki's `common.storage` block. Default: the persistent volume.
+  # For S3 (or anything S3-compatible — MinIO, R2, Spaces), see the README.
+  storage: "{filesystem: {chunks_directory: /loki/chunks, rules_directory: /loki/rules}}"
+  # filesystem | s3 — must name the store the `storage` mapping configures.
+  objectStore: filesystem

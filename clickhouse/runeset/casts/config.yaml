@@ -1,0 +1,9 @@
+configmap:
+  name: clickhouse-config
+  namespace: observability
+  data:
+    # Mounted as /etc/clickhouse-server/config.d/extra.xml. The mount shadows
+    # the image's docker_related_config.xml, so the default value re-asserts
+    # listen_host. Swap in the storage_configuration one-liner (README) for
+    # S3 tiering.
+    extra.xml: "{{ values:clickhouse.extraConfigXml }}"
