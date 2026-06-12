@@ -22,6 +22,7 @@ service:
     - name: data
       mountPath: /var/lib/clickhouse
       claimTemplate:
+        storageClassName: {{ values:clickhouse.storageClass }}
         size: {{ values:clickhouse.volumeSize }}
         accessMode: ReadWriteOnce
   configmapMounts:

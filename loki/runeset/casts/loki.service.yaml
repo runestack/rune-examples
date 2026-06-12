@@ -15,6 +15,7 @@ service:
     - name: data
       mountPath: /loki
       claimTemplate:
+        storageClassName: {{ values:loki.storageClass }}
         size: {{ values:loki.volumeSize }}
         accessMode: ReadWriteOnce
   configmapMounts:

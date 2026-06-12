@@ -4,6 +4,7 @@ clickhouse:
   user: runesight
   password: ""          # required at install: --set clickhouse.password=...
   volumeSize: 20Gi
+  storageClass: local
   memoryLimit: 4Gi
 
   # Extra ClickHouse server config, mounted at

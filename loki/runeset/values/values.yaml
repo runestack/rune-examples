@@ -1,6 +1,7 @@
 loki:
   image: grafana/loki:3.1.1
   volumeSize: 10Gi
+  storageClass: local
   memoryLimit: 1Gi
 
   # How long Loki keeps log data (compactor-enforced). Loki duration
