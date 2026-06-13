@@ -1,0 +1,38 @@
+service:
+  name: loki
+  namespace: observability
+  image: {{ values:loki.image }}
+  scale: 1
+  ports:
+    - name: http
+      port: 3100
+  dependencies:
+    - configmap:loki-config
+  resources:
+    memory:
+      limit: {{ values:loki.memoryLimit }}
+  volumes:
+    - name: data
+      mountPath: /loki
+      claimTemplate:
+        storageClassName: {{ values:loki.storageClass }}
+        size: {{ values:loki.volumeSize }}
+        accessMode: ReadWriteOnce
+  configmapMounts:
+    - name: config
+      mountPath: /etc/loki
+      configmapName: loki-config
+  initSteps:
+    # The loki image runs as uid 10001; a fresh volume is root-owned, so
+    # hand it over before the main container starts.
+    - name: chown-data
+      image: busybox:1.36
+      command: chown
+      args: ["-R", "10001:10001", "/loki"]
+  health:
+    liveness:
+      type: http
+      path: /ready
+      port: 3100
+      initialDelaySeconds: 15
+      intervalSeconds: 10

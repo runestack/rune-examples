@@ -1,0 +1,38 @@
+configmap:
+  name: loki-config
+  namespace: observability
+  data:
+    # Mounted at /etc/loki/local-config.yaml — the path the image's default
+    # command already reads, so no command override is needed.
+    local-config.yaml: |
+      auth_enabled: false
+
+      server:
+        http_listen_port: 3100
+
+      common:
+        instance_addr: 127.0.0.1
+        path_prefix: /loki
+        replication_factor: 1
+        storage: {{ values:loki.storage }}
+        ring:
+          kvstore:
+            store: inmemory
+
+      schema_config:
+        configs:
+          - from: "2024-01-01"
+            store: tsdb
+            object_store: {{ values:loki.objectStore }}
+            schema: v13
+            index:
+              prefix: index_
+              period: 24h
+
+      limits_config:
+        retention_period: {{ values:loki.retention }}
+
+      compactor:
+        working_directory: /loki/compactor
+        retention_enabled: true
+        delete_request_store: {{ values:loki.objectStore }}

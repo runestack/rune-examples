@@ -1,0 +1,4 @@
+name: clickhouse
+version: 0.1.0
+description: Single-node ClickHouse server — the Advanced-tier RuneSight log backend, run on Rune itself
+namespace: observability
