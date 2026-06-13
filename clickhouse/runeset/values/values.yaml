@@ -12,4 +12,4 @@ clickhouse:
   # shadows the image's docker_related_config.xml, so listen_host must stay).
   # To enable S3 tiering, replace this with the storage_configuration
   # one-liner from the README and set storage_policy in your runefile.
-  extraConfigXml: <clickhouse><listen_host>::</listen_host></clickhouse>
+  extraConfigXml: <clickhouse><listen_host>::</listen_host><listen_host>0.0.0.0</listen_host><listen_try>1</listen_try></clickhouse>

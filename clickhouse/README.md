@@ -48,9 +48,9 @@ That's the whole flow: cast the runeset → set `backend` + `dsn` → logs flow,
 | `clickhouse.password` | — | **Required.** `--set clickhouse.password=...` |
 | `clickhouse.volumeSize` | `20Gi` | The hot-data volume. |
 | `clickhouse.memoryLimit` | `4Gi` | Container memory limit. |
-| `clickhouse.extraConfigXml` | `<clickhouse><listen_host>::</listen_host></clickhouse>` | One line of server config XML — see S3 tiering below. |
+| `clickhouse.extraConfigXml` | `<clickhouse><listen_host>::</listen_host><listen_host>0.0.0.0</listen_host><listen_try>1</listen_try></clickhouse>` | One line of server config XML — see S3 tiering below. |
 
-> The config mount shadows the image's `config.d/docker_related_config.xml`, which is what normally sets `listen_host`. Any value you supply for `extraConfigXml` **must keep `<listen_host>::</listen_host>`** or the server stops accepting remote connections.
+> The config mount shadows the image's `config.d/docker_related_config.xml`, which is what normally sets `listen_host`. Any value you supply for `extraConfigXml` **must keep the `listen_host` + `listen_try` trio** or the server stops accepting remote connections.
 
 ## S3 tiering (optional)
 
@@ -59,7 +59,7 @@ Rune has **no S3 client** in the observability path — object storage is always
 **1. Give ClickHouse the storage policy** — replace `extraConfigXml` with this one-liner (one line because it's injected into YAML; fill in endpoint + credentials):
 
 ```
-<clickhouse><listen_host>::</listen_host><storage_configuration><disks><s3_disk><type>s3</type><endpoint>https://BUCKET.s3.REGION.amazonaws.com/runesight/</endpoint><access_key_id>KEY</access_key_id><secret_access_key>SECRET</secret_access_key><metadata_path>/var/lib/clickhouse/disks/s3_disk/</metadata_path></s3_disk></disks><policies><runesight_tiered><volumes><hot><disk>default</disk></hot><s3><disk>s3_disk</disk></s3></volumes><move_factor>0.1</move_factor></runesight_tiered></policies></storage_configuration></clickhouse>
+<clickhouse><listen_host>::</listen_host><listen_host>0.0.0.0</listen_host><listen_try>1</listen_try><storage_configuration><disks><s3_disk><type>s3</type><endpoint>https://BUCKET.s3.REGION.amazonaws.com/runesight/</endpoint><access_key_id>KEY</access_key_id><secret_access_key>SECRET</secret_access_key><metadata_path>/var/lib/clickhouse/disks/s3_disk/</metadata_path></s3_disk></disks><policies><runesight_tiered><volumes><hot><disk>default</disk></hot><s3><disk>s3_disk</disk></s3></volumes><move_factor>0.1</move_factor></runesight_tiered></policies></storage_configuration></clickhouse>
 ```
 
 The same XML, readable (what ClickHouse actually sees in `config.d/extra.xml`):
@@ -67,6 +67,8 @@ The same XML, readable (what ClickHouse actually sees in `config.d/extra.xml`):
 ```xml
 <clickhouse>
   <listen_host>::</listen_host>
+  <listen_host>0.0.0.0</listen_host>
+  <listen_try>1</listen_try>
   <storage_configuration>
     <disks>
       <s3_disk>
